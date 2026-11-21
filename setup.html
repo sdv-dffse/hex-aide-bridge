@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>海克斯参谋</title>
+<style>
+  body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #e8e8e8; font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; color: #1a1a1a; }
+  .card { width: min(520px, calc(100% - 32px)); background: #fff; border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.16); padding: 28px 28px 22px; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  .lead { color: #6b6b6b; font-size: 14px; line-height: 1.6; margin: 0 0 12px; }
+  .ip { font-size: 40px; font-weight: 700; letter-spacing: 1px; line-height: 1.2; margin: 8px 0 6px; }
+  .ok { color: #0a7a32; font-size: 15px; margin: 16px 0 0; }
+  .wait { color: #8a4b00; font-size: 15px; margin: 16px 0 0; }
+  .hint { color: #888; font-size: 13px; margin: 10px 0 0; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>海克斯参谋</h1>
+  <p class="lead"><span id="ver"></span> 把这串地址填进阅读器。不要填 127.0.0.1。</p>
+  <div class="ip" id="ip">{{address}}</div>
+  <p class="wait" id="st">正在扫描客户端…</p>
+  <p class="hint" id="hint"></p>
+</div>
+<script>
+function paint(d) {
+  var ips = (d && d.ips) || [];
+  document.getElementById("ip").textContent = ips[0] || "?";
+  var v = document.getElementById("ver");
+  if (v) v.textContent = (d && d.ver) ? d.ver : "";
+  var el = document.getElementById("st");
+  if (d && d.client) {
+    el.className = "ok";
+    el.textContent = (d.account ? d.account + "  " : "") + (d.phaseText || "");
+  } else {
+    el.className = "wait";
+    el.textContent = (d && d.phaseText) || (d && d.detect) || el.textContent;
+  }
+  var h = document.getElementById("hint");
+  if (h) {
+    if (d && d.picks && d.picks.length) h.textContent = d.picks.join(" / ");
+    else h.textContent = (d && d.client) ? "" : ((d && d.detect) || "");
+  }
+}
+function load() {
+  fetch("/meta").then(function(r) { return r.json(); }).then(paint).catch(function() {});
+}
+load();
+setInterval(load, 2000);
+</script>
+</body>
+</html>
